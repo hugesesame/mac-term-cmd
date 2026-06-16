@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mac Terminal Command Collection</title>
+<style>
+  :root{
+    --color-primary:#0066cc;
+    --color-primary-focus:#0071e3;
+    --color-primary-on-dark:#2997ff;
+    --color-canvas:#ffffff;
+    --color-canvas-parchment:#f5f5f7;
+    --color-surface-pearl:#fafafc;
+    --color-tile-1:#272729;
+    --color-tile-2:#2a2a2c;
+    --color-tile-3:#252527;
+    --color-black:#000000;
+    --color-ink:#1d1d1f;
+    --color-body-on-dark:#ffffff;
+    --color-body-muted:#cccccc;
+    --color-ink-muted-80:#333333;
+    --color-ink-muted-48:#7a7a7a;
+    --color-hairline:#e0e0e0;
+    --color-danger:#d70015;
+    --font-display:"SF Pro Display",system-ui,-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;
+    --font-text:"SF Pro Text",system-ui,-apple-system,BlinkMacSystemFont,"Hiragino Sans",sans-serif;
+    --font-mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    --radius-xs:5px;
+    --radius-sm:8px;
+    --radius-md:11px;
+    --radius-lg:18px;
+    --radius-pill:9999px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:var(--font-text);
+    color:var(--color-ink);
+    background:var(--color-canvas);
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--color-primary);}
+
+  /* ---------- Global Nav ---------- */
+  .global-nav{
+    position:sticky; top:0; z-index:50;
+    background:var(--color-black);
+    color:var(--color-body-on-dark);
+    height:44px;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 20px;
+    font-size:13px;
+  }
+  .global-nav .site-title{font-weight:600; letter-spacing:-0.12px;}
+  .fav-counter-btn{
+    background:transparent; border:1px solid rgba(255,255,255,0.3);
+    color:var(--color-body-on-dark); border-radius:var(--radius-pill);
+    padding:4px 12px; font-size:12px; cursor:pointer; font-family:var(--font-text);
+    transition:transform .15s ease, background .15s ease;
+  }
+  .fav-counter-btn:active{transform:scale(0.95);}
+  .fav-counter-btn.active{background:var(--color-primary); border-color:var(--color-primary);}
+
+  /* ---------- Sub Nav (sticky filter bar) ---------- */
+  .sub-nav{
+    position:sticky; top:44px; z-index:49;
+    background:rgba(245,245,247,0.85);
+    backdrop-filter:saturate(180%) blur(20px);
+    -webkit-backdrop-filter:saturate(180%) blur(20px);
+    border-bottom:1px solid var(--color-hairline);
+    padding:14px 20px;
+  }
+  .sub-nav-row{
+    display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+    max-width:1440px; margin:0 auto;
+  }
+  .search-input-wrap{
+    position:relative; flex:1 1 280px; min-width:200px;
+  }
+  .search-input{
+    width:100%; height:40px; border-radius:var(--radius-pill);
+    border:1px solid rgba(0,0,0,0.08); background:var(--color-canvas);
+    padding:0 16px 0 38px; font-size:15px; color:var(--color-ink);
+    font-family:var(--font-text);
+  }
+  .search-input:focus{outline:2px solid var(--color-primary-focus);}
+  .search-icon{
+    position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    font-size:14px; color:var(--color-ink-muted-48); pointer-events:none;
+  }
+  .tab-row{display:flex; gap:6px; flex-wrap:wrap;}
+  .tab-btn{
+    border:none; background:transparent; color:var(--color-ink-muted-80);
+    font-family:var(--font-text); font-size:13px; font-weight:600;
+    padding:7px 14px; border-radius:var(--radius-pill); cursor:pointer;
+    transition:transform .15s ease, background .15s ease, color .15s ease;
+  }
+  .tab-btn:active{transform:scale(0.95);}
+  .tab-btn.active{background:var(--color-primary); color:#fff;}
+  .fav-toggle-btn{
+    border:1px solid var(--color-primary); background:transparent; color:var(--color-primary);
+    font-family:var(--font-text); font-size:13px; font-weight:600;
+    padding:6px 14px; border-radius:var(--radius-pill); cursor:pointer;
+    transition:transform .15s ease, background .15s ease, color .15s ease;
+    white-space:nowrap;
+  }
+  .fav-toggle-btn:active{transform:scale(0.95);}
+  .fav-toggle-btn.active{background:var(--color-primary); color:#fff;}
+  .genre-chip-row{
+    display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; max-width:1440px; margin-left:auto; margin-right:auto;
+  }
+  .genre-chip{
+    border:1px solid var(--color-hairline); background:var(--color-canvas); color:var(--color-ink-muted-80);
+    font-family:var(--font-text); font-size:12px; padding:5px 12px; border-radius:var(--radius-pill);
+    cursor:pointer; transition:transform .15s ease, background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .genre-chip:active{transform:scale(0.95);}
+  .genre-chip.active{background:var(--color-ink); color:#fff; border-color:var(--color-ink);}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    background:var(--color-canvas-parchment);
+    padding:64px 20px 56px;
+    text-align:center;
+  }
+  .hero-inner{max-width:760px; margin:0 auto;}
+  .hero h1{
+    font-family:var(--font-display); font-size:40px; font-weight:600;
+    letter-spacing:-0.28px; line-height:1.1; margin:0 0 12px;
+  }
+  .hero p.lead{
+    font-size:19px; font-weight:400; color:var(--color-ink-muted-80);
+    margin:0 0 8px; line-height:1.4;
+  }
+  .hero .stats{
+    font-size:13px; color:var(--color-ink-muted-48); margin-bottom:32px;
+  }
+  .today-card{
+    background:var(--color-canvas); border:1px solid var(--color-hairline);
+    border-radius:var(--radius-lg); padding:24px; text-align:left;
+    max-width:560px; margin:0 auto;
+  }
+  .today-card .today-label{
+    font-size:12px; font-weight:600; color:var(--color-primary);
+    text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;
+  }
+  .today-card .today-name{
+    font-family:var(--font-mono); font-size:18px; font-weight:600; color:var(--color-ink);
+    margin-bottom:6px;
+  }
+  .today-card .today-desc{font-size:14px; color:var(--color-ink-muted-80); margin-bottom:14px;}
+  .reroll-btn{
+    background:var(--color-surface-pearl); border:1px solid var(--color-hairline);
+    color:var(--color-ink); font-family:var(--font-text); font-size:13px; font-weight:600;
+    padding:8px 16px; border-radius:var(--radius-pill); cursor:pointer;
+    transition:transform .15s ease;
+  }
+  .reroll-btn:active{transform:scale(0.95);}
+
+  /* ---------- Level Sections ---------- */
+  .level-section{padding:64px 20px 72px;}
+  .level-section.bg-parchment{background:var(--color-canvas-parchment); color:var(--color-ink);}
+  .level-section.bg-white{background:var(--color-canvas); color:var(--color-ink);}
+  .level-section.bg-dark{background:var(--color-tile-1); color:var(--color-body-on-dark);}
+  .level-section.bg-black{background:var(--color-black); color:var(--color-body-on-dark);}
+  .level-section.section-empty{display:none;}
+
+  .level-header{max-width:1440px; margin:0 auto 28px;}
+  .level-header h2{
+    font-family:var(--font-display); font-size:34px; font-weight:600;
+    letter-spacing:-0.374px; margin:0 0 6px;
+  }
+  .level-header .level-sub{font-size:15px; opacity:0.7; margin:0 0 14px;}
+  .progress-bar-track{
+    height:6px; border-radius:var(--radius-pill); background:rgba(127,127,127,0.25);
+    max-width:320px; overflow:hidden; margin-bottom:6px;
+  }
+  .level-section.bg-parchment .progress-bar-track,
+  .level-section.bg-white .progress-bar-track{background:rgba(0,0,0,0.08);}
+  .progress-bar-fill{height:100%; background:var(--color-primary); border-radius:var(--radius-pill); transition:width .3s ease;}
+  .progress-label{font-size:12px; opacity:0.7;}
+
+  .cards-grid{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr));
+    gap:20px; max-width:1440px; margin:0 auto;
+  }
+
+  /* ---------- Command Card ---------- */
+  .cmd-card{
+    background:var(--color-canvas); border:1px solid var(--color-hairline);
+    border-radius:var(--radius-lg); padding:20px; color:var(--color-ink);
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .cmd-card.hidden-by-filter{display:none;}
+  .cmd-card-top{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
+  .cmd-name{
+    font-family:var(--font-mono); font-size:15px; font-weight:600; color:var(--color-primary);
+    word-break:break-word;
+  }
+  .fav-star{
+    background:none; border:none; cursor:pointer; font-size:18px; line-height:1;
+    color:var(--color-ink-muted-48); padding:2px; flex-shrink:0;
+    transition:transform .15s ease;
+  }
+  .fav-star:active{transform:scale(0.8);}
+  .fav-star.active{color:var(--color-primary);}
+  .cmd-desc{font-size:14px; line-height:1.5; color:var(--color-ink-muted-80); margin:0;}
+  .danger-badge{
+    display:inline-block; font-size:11px; font-weight:600; color:var(--color-danger);
+    border:1px solid var(--color-danger); border-radius:var(--radius-pill);
+    padding:2px 9px; width:fit-content;
+  }
+  .cmd-example{
+    position:relative; background:var(--color-surface-pearl); border:1px solid var(--color-hairline);
+    border-radius:var(--radius-sm); padding:10px 38px 10px 12px;
+    font-family:var(--font-mono); font-size:12.5px; line-height:1.6; color:var(--color-ink);
+    white-space:pre-wrap; word-break:break-word;
+  }
+  .copy-btn{
+    position:absolute; top:8px; right:8px; width:24px; height:24px; border-radius:var(--radius-full,50%);
+    border:1px solid var(--color-hairline); background:var(--color-canvas); cursor:pointer;
+    font-size:12px; display:flex; align-items:center; justify-content:center;
+    transition:transform .15s ease;
+  }
+  .copy-btn:active{transform:scale(0.9);}
+  .copy-btn.copied{background:var(--color-primary); border-color:var(--color-primary); color:#fff;}
+  .cmd-tip{
+    font-size:12.5px; color:var(--color-ink-muted-80); background:rgba(0,102,204,0.06);
+    border-radius:var(--radius-sm); padding:8px 10px;
+  }
+  .cmd-tip strong{color:var(--color-primary); font-weight:600;}
+  .cmd-bottom-row{display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding-top:4px;}
+  .genre-tag{font-size:11px; color:var(--color-ink-muted-48);}
+  .learned-toggle{
+    display:flex; align-items:center; gap:5px; font-size:12px; cursor:pointer;
+    color:var(--color-ink-muted-48); user-select:none;
+  }
+  .learned-toggle input{accent-color:var(--color-primary); cursor:pointer;}
+  .learned-toggle.active{color:var(--color-primary); font-weight:600;}
+
+  /* dark tile card adjustments (advanced section) keeps card light for readability */
+  .level-section.bg-dark .level-header,
+  .level-section.bg-black .level-header{color:var(--color-body-on-dark);}
+
+  .no-results{
+    max-width:1440px; margin:0 auto; text-align:center; padding:40px 20px;
+    color:var(--color-ink-muted-48); font-size:15px; display:none;
+  }
+  .no-results.show{display:block;}
+
+  /* ---------- Footer ---------- */
+  footer{
+    background:var(--color-canvas-parchment); color:var(--color-ink-muted-80);
+    padding:48px 20px; text-align:center; font-size:13px;
+  }
+  footer .footer-stat{font-size:12px; color:var(--color-ink-muted-48); margin-top:6px;}
+
+  @media (max-width:834px){
+    .level-section{padding:48px 16px 56px;}
+    .hero{padding:48px 16px 40px;}
+  }
+  @media (max-width:640px){
+    .hero h1{font-size:30px;}
+    .level-header h2{font-size:26px;}
+    .global-nav{padding:0 14px;}
+    .search-input{font-size:13px; padding-left:34px;}
+  }
+  @media (max-width:374px){
+    .search-input{font-size:12px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="global-nav">
+  <span class="site-title">Mac Terminal Command Collection</span>
+  <button class="fav-counter-btn" id="favCounterBtn" type="button">★ お気に入り <span id="favCount">0</span></button>
+</header>
+
+<div class="sub-nav">
+  <div class="sub-nav-row">
+    <div class="search-input-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" class="search-input" id="searchInput" placeholder="検索">
+    </div>
+    <div class="tab-row" id="tabRow"></div>
+    <button class="fav-toggle-btn" id="favToggleBtn" type="button">★ お気に入りのみ</button>
+  </div>
+  <div class="genre-chip-row" id="genreChipRow"></div>
+</div>
+
+<section class="hero">
+  <div class="hero-inner">
+    <h1>Mac Terminal Command Collection</h1>
+    <p class="lead">初級から上級、そして小ネタまで。検索・お気に入り・コピーで使える実践チートシート。</p>
+    <p class="stats" id="totalStats"></p>
+    <div class="today-card">
+      <div class="today-label">今日のコマンド</div>
+      <div class="today-name" id="todayName"></div>
+      <div class="today-desc" id="todayDesc"></div>
+      <button class="reroll-btn" id="rerollBtn" type="button">🎲 別のコマンドを見る</button>
+    </div>
+  </div>
+</section>
+
+<main id="levelSectionsRoot"></main>
+
+<p class="no-results" id="noResults">条件に一致するコマンドが見つかりませんでした。検索語やフィルタを変更してみてください。</p>
+
+<footer>
+  <div>Mac Terminal Command Collection</div>
+  <div class="footer-stat" id="footerStats"></div>
+</footer>
+
+<script>
+/* ============================================================
+   データ定義
+   ============================================================ */
+const LEVEL_LABELS = { beginner:"初級", intermediate:"中級", advanced:"上級", hidden:"隠しコマンド" };
+const LEVEL_ORDER = ["beginner","intermediate","advanced","hidden"];
+const LEVEL_BG = { beginner:"bg-parchment", intermediate:"bg-white", advanced:"bg-dark", hidden:"bg-black" };
+const LEVEL_SUB = {
+  beginner:"まずはここから。ファイル操作とナビゲーションの基本。",
+  intermediate:"日常の作業効率を上げる、一歩進んだコマンド。",
+  advanced:"システム管理・ネットワーク・開発に踏み込む上級者向け。",
+  hidden:"知らなくても困らないけど、知っていると楽しい小ネタ集。"
+};
+const GENRE_LABELS = {
+  nav:"基本ナビゲーション", file:"ファイル/ディレクトリ操作", view:"表示・確認",
+  text:"テキスト処理", search:"検索", process:"プロセス管理", net:"ネットワーク基礎",
+  perm:"権限管理", archive:"アーカイブ/圧縮", mac:"Mac便利技",
+  sysadmin:"システム管理", netadv:"ネットワーク詳細", script:"スクリプティング",
+  perf:"パフォーマンス監視", dev:"開発者ツール", security:"セキュリティ",
+  fun:"小ネタ・お遊び"
+};
+
+/* COMMANDS配列はここに追記していく（後続のEditで挿入） */
+const COMMANDS = [
+/* ===== 初級：基本ナビゲーション ===== */
+{id:1,name:"pwd",level:"beginner",genre:"nav",desc:"現在いるディレクトリ（カレントディレクトリ）の絶対パスを表示する。",example:"$ pwd\n/Users/yourname/project",tip:null,danger:false},
+{id:2,name:"cd",level:"beginner",genre:"nav",desc:"指定したディレクトリへ移動する。Macのターミナル操作の基本中の基本。",example:"$ cd Documents\n$ cd /Users/yourname/Desktop",tip:"Tabキーで補完しながら入力するとタイプミスを防げる。",danger:false},
+{id:3,name:"cd ..",level:"beginner",genre:"nav",desc:"1つ上の階層（親ディレクトリ）へ移動する。",example:"$ cd ..",tip:"cd ../.. のように重ねると2階層上に移動できる。",danger:false},
+{id:4,name:"cd ~",level:"beginner",genre:"nav",desc:"ホームディレクトリへ一気に移動する。引数なしの cd だけでも同じ動作になる。",example:"$ cd ~\n$ cd",tip:null,danger:false},
+{id:5,name:"cd -",level:"beginner",genre:"nav",desc:"直前にいたディレクトリへワンタッチで戻る。2つの場所を行き来する時に便利。",example:"$ cd /var/log\n$ cd -\n/Users/yourname/project",tip:null,danger:false},
+{id:6,name:"ls",level:"beginner",genre:"nav",desc:"カレントディレクトリ内のファイル・フォルダ一覧を表示する。",example:"$ ls\nDesktop  Documents  Downloads",tip:null,danger:false},
+{id:7,name:"ls -la",level:"beginner",genre:"nav",desc:"隠しファイル（.で始まるファイル）も含めて、パーミッションやサイズなど詳細情報付きで一覧表示する。",example:"$ ls -la\ndrwxr-xr-x  5 you staff  160  6  1 10:00 .\n-rw-r--r--  1 you staff  512  6  1 10:00 .gitignore",tip:"設定ファイル（.zshrcなど）を探す時はこのオプションが必須。",danger:false},
+{id:8,name:"ls -lh",level:"beginner",genre:"nav",desc:"ファイルサイズをKB/MB/GBなど人間が読みやすい単位で表示する。",example:"$ ls -lh\n-rw-r--r--  1 you staff  2.3M  movie.mp4",tip:null,danger:false},
+{id:9,name:"ls -lt",level:"beginner",genre:"nav",desc:"更新日時が新しい順にファイルを並べ替えて表示する。最近編集したファイルをすぐ確認できる。",example:"$ ls -lt | head -5",tip:null,danger:false},
+{id:10,name:"open .",level:"beginner",genre:"nav",desc:"現在のディレクトリをFinderで開く。ターミナルとGUIを行き来する定番コマンド。",example:"$ open .",tip:null,danger:false},
+{id:11,name:"pushd",level:"beginner",genre:"nav",desc:"現在のディレクトリをスタックに積みながら指定先へ移動する。popdと組み合わせて使う。",example:"$ pushd /var/log\n$ pushd ~/Desktop",tip:null,danger:false},
+{id:12,name:"popd",level:"beginner",genre:"nav",desc:"pushdで積んだディレクトリスタックの先頭に戻る。複数フォルダを行き来する作業で便利。",example:"$ popd",tip:null,danger:false},
+
+/* ===== 初級：ファイル/ディレクトリ操作 ===== */
+{id:13,name:"mkdir",level:"beginner",genre:"file",desc:"新しいディレクトリ（フォルダ）を作成する。",example:"$ mkdir new-project",tip:null,danger:false},
+{id:14,name:"mkdir -p",level:"beginner",genre:"file",desc:"必要な親ディレクトリがなければまとめて作成しながらネストしたディレクトリを作る。",example:"$ mkdir -p src/components/ui",tip:null,danger:false},
+{id:15,name:"touch",level:"beginner",genre:"file",desc:"空のファイルを新規作成する。既存ファイルなら更新日時だけを現在時刻に変更する。",example:"$ touch README.md",tip:null,danger:false},
+{id:16,name:"cp",level:"beginner",genre:"file",desc:"ファイルをコピーする。",example:"$ cp original.txt copy.txt",tip:null,danger:false},
+{id:17,name:"cp -r",level:"beginner",genre:"file",desc:"ディレクトリを中身ごと再帰的にコピーする。",example:"$ cp -r project project-backup",tip:null,danger:false},
+{id:18,name:"mv",level:"beginner",genre:"file",desc:"ファイルやディレクトリを移動する。同じ場所内で名前だけ変えればリネームになる。",example:"$ mv old-name.txt new-name.txt\n$ mv report.pdf ~/Documents/",tip:null,danger:false},
+{id:19,name:"rm",level:"beginner",genre:"file",desc:"ファイルを削除する。ゴミ箱には入らず即座に消えるので注意。",example:"$ rm unused.txt",tip:null,danger:false},
+{id:20,name:"rm -r",level:"beginner",genre:"file",desc:"ディレクトリを中身ごと再帰的に削除する。元に戻せないため対象パスを必ず確認すること。",example:"$ rm -r old-folder",tip:"心配な時は先に rm -ri で1件ずつ確認しながら消すと安全。",danger:true},
+{id:21,name:"rm -i",level:"beginner",genre:"file",desc:"削除前に1件ずつ確認プロンプトを出す安全モード。",example:"$ rm -i *.log\nremove file1.log? y",tip:null,danger:false},
+{id:22,name:"rmdir",level:"beginner",genre:"file",desc:"中身が空のディレクトリだけを削除する。中身が残っているとエラーになるため安全。",example:"$ rmdir empty-folder",tip:null,danger:false},
+{id:23,name:"open",level:"beginner",genre:"file",desc:"ファイルをMacの既定アプリで開く。",example:"$ open photo.png\n$ open report.pdf",tip:null,danger:false},
+{id:24,name:"open -a",level:"beginner",genre:"file",desc:"アプリ名を指定してファイルを開く。既定アプリ以外で開きたい時に使う。",example:"$ open -a \"Visual Studio Code\" .\n$ open -a Preview image.jpg",tip:null,danger:false},
+{id:25,name:"ditto",level:"beginner",genre:"file",desc:"macOS独自のコピーコマンド。リソースフォークやパーミッションを保ったままディレクトリを複製できる。",example:"$ ditto source-folder dest-folder",tip:"アプリバンドル（.app）のコピーはcpよりdittoの方が安全。",danger:false},
+{id:26,name:"cp -n",level:"beginner",genre:"file",desc:"コピー先に同名ファイルが既にある場合は上書きせずスキップする。",example:"$ cp -n *.txt ~/backup/",tip:null,danger:false},
+{id:27,name:"ln -s",level:"beginner",genre:"file",desc:"シンボリックリンク（ショートカットのようなもの）を作成する。",example:"$ ln -s /Applications/Visual\\ Studio\\ Code.app ~/Desktop/VSCode",tip:null,danger:false},
+{id:28,name:"stat",level:"beginner",genre:"file",desc:"ファイルの詳細情報（サイズ・作成日時・パーミッションなど）を表示する。",example:"$ stat report.pdf",tip:null,danger:false},
+{id:29,name:"basename",level:"beginner",genre:"file",desc:"パスからファイル名部分だけを取り出す。",example:"$ basename /Users/you/project/index.html\nindex.html",tip:null,danger:false},
+{id:30,name:"dirname",level:"beginner",genre:"file",desc:"パスからディレクトリ部分だけを取り出す。",example:"$ dirname /Users/you/project/index.html\n/Users/you/project",tip:null,danger:false},
+
+/* ===== 初級：表示・確認 ===== */
+{id:31,name:"cat",level:"beginner",genre:"view",desc:"ファイルの中身をそのままターミナルに表示する。短いファイルの確認に最適。",example:"$ cat memo.txt",tip:"cat file1 file2 > merged.txt で複数ファイルを結合できる。",danger:false},
+{id:32,name:"less",level:"beginner",genre:"view",desc:"長いファイルをページ送りしながら閲覧する。qで終了、/で検索もできる。",example:"$ less access.log",tip:null,danger:false},
+{id:33,name:"head",level:"beginner",genre:"view",desc:"ファイルの先頭部分（デフォルト10行）だけを表示する。",example:"$ head -20 access.log",tip:null,danger:false},
+{id:34,name:"tail",level:"beginner",genre:"view",desc:"ファイルの末尾部分（デフォルト10行）だけを表示する。ログの最新行確認の定番。",example:"$ tail -20 access.log",tip:null,danger:false},
+{id:35,name:"tail -f",level:"beginner",genre:"view",desc:"ファイルへの追記をリアルタイムで監視し続ける。ログ監視で頻出。",example:"$ tail -f /var/log/system.log",tip:"Ctrl+Cで監視を終了できる。",danger:false},
+{id:36,name:"echo",level:"beginner",genre:"view",desc:"文字列や変数の値を画面に出力する。",example:"$ echo \"Hello, Mac!\"\nHello, Mac!\n$ echo $HOME\n/Users/yourname",tip:null,danger:false},
+{id:37,name:"clear",level:"beginner",genre:"view",desc:"ターミナル画面の表示内容をすべてクリアする。",example:"$ clear",tip:"ショートカット Ctrl+L でも同じことができる。",danger:false},
+{id:38,name:"history",level:"beginner",genre:"view",desc:"過去に実行したコマンドの履歴を一覧表示する。",example:"$ history\n  501  cd project\n  502  ls -la",tip:"!502 のように番号指定で再実行できる。",danger:false},
+{id:39,name:"man",level:"beginner",genre:"view",desc:"コマンドの公式マニュアルを表示する。オプションの意味を調べたい時の最初の手段。",example:"$ man ls",tip:"qで終了。",danger:false},
+{id:40,name:"file",level:"beginner",genre:"view",desc:"指定したファイルの種類（テキスト・画像・実行ファイルなど）を判定して表示する。",example:"$ file photo.png\nphoto.png: PNG image data, 1920 x 1080",tip:null,danger:false},
+{id:41,name:"wc",level:"beginner",genre:"view",desc:"ファイルの行数・単語数・バイト数をカウントする。",example:"$ wc -l access.log\n     128 access.log",tip:null,danger:false},
+{id:42,name:"du -sh",level:"beginner",genre:"view",desc:"指定したディレクトリの合計サイズを人間が読みやすい単位で表示する。",example:"$ du -sh Downloads\n4.2G\tDownloads",tip:null,danger:false},
+{id:43,name:"df -h",level:"beginner",genre:"view",desc:"ディスクの空き容量・使用容量をボリュームごとに表示する。",example:"$ df -h\nFilesystem  Size  Used  Avail  Capacity\n/dev/disk3s1  500G  320G   180G    65%",tip:null,danger:false},
+{id:44,name:"date",level:"beginner",genre:"view",desc:"現在の日付と時刻を表示する。",example:"$ date\n2026年 6月17日 水曜日 09:30:00 JST",tip:null,danger:false},
+{id:45,name:"whoami",level:"beginner",genre:"view",desc:"現在ログインしているユーザー名を表示する。",example:"$ whoami\nyourname",tip:null,danger:false},
+/* ===== 中級：テキスト処理 ===== */
+{id:46,name:"grep",level:"intermediate",genre:"text",desc:"ファイルの中から指定した文字列を含む行を検索する。",example:"$ grep \"error\" access.log",tip:"-n を付けると行番号も表示される。",danger:false},
+{id:47,name:"grep -r",level:"intermediate",genre:"text",desc:"ディレクトリ配下のファイルを再帰的に検索する。プロジェクト全体から特定の文字列を探す時に使う。",example:"$ grep -r \"TODO\" ./src",tip:null,danger:false},
+{id:48,name:"grep -i",level:"intermediate",genre:"text",desc:"大文字小文字を区別せずに検索する。",example:"$ grep -i \"error\" access.log",tip:null,danger:false},
+{id:49,name:"sed",level:"intermediate",genre:"text",desc:"テキストの置換やフィルタリングをストリームに対して行う。ファイルを一括置換したい時に便利。",example:"$ sed 's/foo/bar/g' input.txt > output.txt",tip:"macOS標準のsedはBSD版。GNU sedと挙動が微妙に違うので注意。",danger:false},
+{id:50,name:"awk",level:"intermediate",genre:"text",desc:"列（カラム）単位でテキストを処理・集計するためのプログラミング言語兼コマンド。",example:"$ awk '{print $1}' access.log",tip:null,danger:false},
+{id:51,name:"sort",level:"intermediate",genre:"text",desc:"テキストの行を並び替える。",example:"$ sort names.txt\n$ sort -n numbers.txt\n$ sort -r names.txt",tip:null,danger:false},
+{id:52,name:"uniq",level:"intermediate",genre:"text",desc:"連続する重複行を取り除く。sortと組み合わせて使うのが定番。",example:"$ sort names.txt | uniq\n$ sort names.txt | uniq -c",tip:"uniq -c で出現回数も数えられる。",danger:false},
+{id:53,name:"cut",level:"intermediate",genre:"text",desc:"区切り文字をもとに特定の列だけを抜き出す。",example:"$ cut -d',' -f1 data.csv",tip:null,danger:false},
+{id:54,name:"tr",level:"intermediate",genre:"text",desc:"文字を別の文字に置換・削除する。標準入力に対してシンプルな文字変換を行う。",example:"$ echo \"hello\" | tr 'a-z' 'A-Z'\nHELLO",tip:null,danger:false},
+{id:55,name:"diff",level:"intermediate",genre:"text",desc:"2つのファイルの内容を比較し、差分を表示する。",example:"$ diff old.txt new.txt",tip:"diff -u を使うとgit diffと似た見やすい形式になる。",danger:false},
+
+/* ===== 中級：検索 ===== */
+{id:56,name:"find",level:"intermediate",genre:"search",desc:"指定したディレクトリ配下からファイルやフォルダを条件付きで検索する。",example:"$ find . -type f",tip:null,danger:false},
+{id:57,name:"find -name",level:"intermediate",genre:"search",desc:"ファイル名のパターンを指定して検索する。",example:"$ find . -name \"*.log\"",tip:null,danger:false},
+{id:58,name:"find -mtime",level:"intermediate",genre:"search",desc:"更新日時を条件にファイルを検索する。古いファイルの一括整理に便利。",example:"$ find . -mtime +30 -type f",tip:"見つけたファイルをそのまま削除するなら find . -mtime +30 -delete だが実行前に必ず一覧確認すること。",danger:false},
+{id:59,name:"mdfind",level:"intermediate",genre:"search",desc:"macOSのSpotlight検索をターミナルから実行する。インデックス済みなのでfindより高速。",example:"$ mdfind \"請求書\"\n$ mdfind -name report.pdf",tip:null,danger:false},
+{id:60,name:"xargs",level:"intermediate",genre:"search",desc:"前のコマンドの出力結果を別コマンドの引数として渡す。findとの組み合わせが定番。",example:"$ find . -name \"*.tmp\" | xargs rm",tip:null,danger:false},
+{id:61,name:"type",level:"intermediate",genre:"search",desc:"指定した名前がコマンド・エイリアス・関数のどれとして解釈されるかを調べる。",example:"$ type ls\nls is an alias for ls -G",tip:null,danger:false},
+{id:62,name:"command -v",level:"intermediate",genre:"search",desc:"指定したコマンドが存在するかどうか、存在する場合はそのパスを調べる。スクリプト内での存在チェックによく使う。",example:"$ command -v git\n/usr/bin/git",tip:null,danger:false},
+{id:63,name:"grep -l",level:"intermediate",genre:"search",desc:"検索文字列が含まれる行ではなく、含まれているファイル名だけを一覧表示する。",example:"$ grep -rl \"TODO\" ./src",tip:null,danger:false},
+
+/* ===== 中級：プロセス管理 ===== */
+{id:64,name:"ps",level:"intermediate",genre:"process",desc:"現在実行中のプロセス一覧を表示する。",example:"$ ps -ef",tip:null,danger:false},
+{id:65,name:"ps aux",level:"intermediate",genre:"process",desc:"全ユーザーの全プロセスをCPU・メモリ使用率付きで表示する。",example:"$ ps aux | grep node",tip:null,danger:false},
+{id:66,name:"top",level:"intermediate",genre:"process",desc:"CPU・メモリ使用率の高いプロセスをリアルタイムで監視する。qで終了。",example:"$ top",tip:"top -o cpu でCPU使用率順に並べ替えられる。",danger:false},
+{id:67,name:"kill",level:"intermediate",genre:"process",desc:"プロセスIDを指定してプロセスを終了させる。",example:"$ kill 12345",tip:null,danger:false},
+{id:68,name:"kill -9",level:"intermediate",genre:"process",desc:"プロセスを強制終了する。通常のkillで終了しない応答なしのプロセスに使うが、保存していない作業は失われる。",example:"$ kill -9 12345",tip:"先に通常の kill（SIGTERM）を試し、それでも終了しない場合の最終手段として使う。",danger:true},
+{id:69,name:"killall",level:"intermediate",genre:"process",desc:"プロセスIDではなくプロセス名を指定して終了させる。",example:"$ killall Finder",tip:null,danger:false},
+{id:70,name:"jobs",level:"intermediate",genre:"process",desc:"現在のターミナルセッションでバックグラウンド/停止中のジョブ一覧を表示する。",example:"$ jobs\n[1]+  Running    npm run dev &",tip:null,danger:false},
+{id:71,name:"bg",level:"intermediate",genre:"process",desc:"Ctrl+Zで一時停止したジョブをバックグラウンドで再開する。",example:"$ bg %1",tip:null,danger:false},
+{id:72,name:"fg",level:"intermediate",genre:"process",desc:"バックグラウンドのジョブをフォアグラウンドに戻す。",example:"$ fg %1",tip:null,danger:false},
+{id:73,name:"nohup",level:"intermediate",genre:"process",desc:"ターミナルを閉じてもプロセスを実行し続けさせる。長時間バッチ処理などに使う。",example:"$ nohup ./long-task.sh &",tip:null,danger:false},
+
+/* ===== 中級：ネットワーク基礎 ===== */
+{id:74,name:"ping",level:"intermediate",genre:"net",desc:"指定したホストへの疎通確認を行う。ネットワークトラブルの基本切り分けに使う。",example:"$ ping google.com",tip:"Ctrl+Cで停止。",danger:false},
+{id:75,name:"curl",level:"intermediate",genre:"net",desc:"URLに対してHTTPリクエストを送り、結果を取得する。API動作確認の定番。",example:"$ curl https://api.example.com/status",tip:null,danger:false},
+{id:76,name:"curl -O",level:"intermediate",genre:"net",desc:"URLからファイルを元のファイル名のままダウンロードする。",example:"$ curl -O https://example.com/file.zip",tip:null,danger:false},
+{id:77,name:"wget",level:"intermediate",genre:"net",desc:"URLからファイルをダウンロードする。macOS標準ではなくHomebrewでの導入が必要。",example:"$ brew install wget\n$ wget https://example.com/file.zip",tip:null,danger:false},
+{id:78,name:"ifconfig",level:"intermediate",genre:"net",desc:"ネットワークインターフェースの情報（IPアドレスなど）を表示する。",example:"$ ifconfig en0",tip:null,danger:false},
+{id:79,name:"ssh",level:"intermediate",genre:"net",desc:"リモートサーバーに安全に接続する。サーバー作業の必須コマンド。",example:"$ ssh user@example.com",tip:null,danger:false},
+{id:80,name:"scp",level:"intermediate",genre:"net",desc:"SSH経由でローカルとリモート間のファイルを安全にコピーする。",example:"$ scp local.txt user@example.com:/home/user/",tip:null,danger:false},
+{id:81,name:"netstat",level:"intermediate",genre:"net",desc:"ネットワーク接続やポートの使用状況を表示する。",example:"$ netstat -an | grep LISTEN",tip:null,danger:false},
+
+/* ===== 中級：権限管理 ===== */
+{id:82,name:"chmod",level:"intermediate",genre:"perm",desc:"ファイルやディレクトリのアクセス権限（読み取り・書き込み・実行）を変更する。",example:"$ chmod 644 file.txt",tip:null,danger:false},
+{id:83,name:"chmod +x",level:"intermediate",genre:"perm",desc:"ファイルに実行権限を付与する。シェルスクリプトを実行可能にする時の定番。",example:"$ chmod +x deploy.sh\n$ ./deploy.sh",tip:null,danger:false},
+{id:84,name:"chmod 755",level:"intermediate",genre:"perm",desc:"所有者は読み書き実行、その他は読み取り実行のみという数値指定での権限変更。Webサーバーのディレクトリなどでよく使われる設定。",example:"$ chmod 755 public/",tip:null,danger:false},
+{id:85,name:"chown",level:"intermediate",genre:"perm",desc:"ファイルやディレクトリの所有者を変更する。管理者権限が必要なことが多い。",example:"$ sudo chown yourname:staff file.txt",tip:null,danger:false},
+{id:86,name:"sudo",level:"intermediate",genre:"perm",desc:"管理者（root）権限でコマンドを実行する。システムに影響する操作の前には必ず内容を理解してから使う。",example:"$ sudo apachectl restart",tip:null,danger:false},
+{id:87,name:"sudo -i",level:"intermediate",genre:"perm",desc:"管理者権限のシェルセッションを開始する。以降のコマンドすべてがroot権限で実行されるため特に注意が必要。",example:"$ sudo -i\n#",tip:"作業が終わったら exit で必ず通常権限に戻る。",danger:false},
+{id:88,name:"groups",level:"intermediate",genre:"perm",desc:"現在のユーザーが所属しているグループ一覧を表示する。",example:"$ groups\nyourname staff admin",tip:null,danger:false},
+{id:89,name:"id",level:"intermediate",genre:"perm",desc:"ユーザーID・グループIDなど、現在のユーザーの詳細な識別情報を表示する。",example:"$ id\nuid=501(yourname) gid=20(staff) groups=20(staff),12(everyone)",tip:null,danger:false},
+
+/* ===== 中級：アーカイブ/圧縮 ===== */
+{id:90,name:"tar -czvf",level:"intermediate",genre:"archive",desc:"指定したファイル/ディレクトリをgzip圧縮したtarアーカイブにまとめる。",example:"$ tar -czvf backup.tar.gz ./project",tip:null,danger:false},
+{id:91,name:"tar -xzvf",level:"intermediate",genre:"archive",desc:"gzip圧縮されたtarアーカイブを展開する。",example:"$ tar -xzvf backup.tar.gz",tip:null,danger:false},
+{id:92,name:"zip",level:"intermediate",genre:"archive",desc:"ファイルやディレクトリをzip形式で圧縮する。",example:"$ zip -r archive.zip ./project",tip:null,danger:false},
+{id:93,name:"unzip",level:"intermediate",genre:"archive",desc:"zipファイルを展開する。",example:"$ unzip archive.zip",tip:null,danger:false},
+{id:94,name:"gzip",level:"intermediate",genre:"archive",desc:"単一ファイルをgzip形式で圧縮する。",example:"$ gzip access.log\n# access.log.gz が作成される",tip:null,danger:false},
+{id:95,name:"gunzip",level:"intermediate",genre:"archive",desc:"gzip圧縮されたファイルを展開する。",example:"$ gunzip access.log.gz",tip:null,danger:false},
+{id:96,name:"shasum",level:"intermediate",genre:"archive",desc:"ファイルのSHAハッシュ値を計算する。ダウンロードしたファイルの整合性確認に使う。",example:"$ shasum -a 256 installer.dmg",tip:null,danger:false},
+{id:97,name:"md5",level:"intermediate",genre:"archive",desc:"ファイルのMD5チェックサムを計算する。macOS独自のmd5コマンド。",example:"$ md5 installer.dmg",tip:null,danger:false},
+
+/* ===== 中級：Mac便利技 ===== */
+{id:98,name:"pbcopy",level:"intermediate",genre:"mac",desc:"標準入力の内容をMacのクリップボードにコピーする。",example:"$ cat config.json | pbcopy",tip:"pwd | pbcopy で今いる場所のパスを一瞬でコピーできる。",danger:false},
+{id:99,name:"pbpaste",level:"intermediate",genre:"mac",desc:"Macのクリップボードの内容を標準出力に貼り付ける。",example:"$ pbpaste > clipboard.txt",tip:null,danger:false},
+{id:100,name:"say",level:"intermediate",genre:"mac",desc:"指定したテキストを音声で読み上げる。長時間処理の完了通知に使うと面白い。",example:"$ say \"ビルドが完了しました\"",tip:"長いコマンドの後に && say done と付けると終了に気付きやすい。",danger:false},
+{id:101,name:"screencapture",level:"intermediate",genre:"mac",desc:"コマンドラインからスクリーンショットを撮影する。",example:"$ screencapture -i shot.png",tip:"-i を付けると範囲選択モードになる。",danger:false},
+{id:102,name:"open -a",level:"intermediate",genre:"mac",desc:"指定したMacアプリをコマンドラインから起動する。",example:"$ open -a Calculator\n$ open -a \"App Store\"",tip:null,danger:false},
+{id:103,name:"caffeinate",level:"intermediate",genre:"mac",desc:"Macがスリープしないようにする。長時間の処理中に画面ロックされたくない時に使う。",example:"$ caffeinate -t 3600\n# 1時間スリープを防止",tip:null,danger:false},
+{id:104,name:"diskutil list",level:"intermediate",genre:"mac",desc:"接続されているディスクとパーティションの一覧を表示する。",example:"$ diskutil list",tip:null,danger:false},
+{id:105,name:"system_profiler",level:"intermediate",genre:"mac",desc:"Macのハードウェア・ソフトウェア構成の詳細情報を表示する。",example:"$ system_profiler SPHardwareDataType",tip:null,danger:false},
+/* ===== 上級：システム管理 ===== */
+{id:106,name:"launchctl",level:"advanced",genre:"sysadmin",desc:"macOSの起動デーモン/エージェント（launchd管理下のサービス）を一覧・登録・制御する。",example:"$ launchctl list | grep com.apple",tip:null,danger:false},
+{id:107,name:"brew",level:"advanced",genre:"sysadmin",desc:"macOS用パッケージマネージャーHomebrewでソフトウェアをインストール・管理する。",example:"$ brew install wget\n$ brew update && brew upgrade",tip:null,danger:false},
+{id:108,name:"softwareupdate",level:"advanced",genre:"sysadmin",desc:"macOSのソフトウェアアップデートをコマンドラインから確認・適用する。",example:"$ softwareupdate -l",tip:null,danger:false},
+{id:109,name:"defaults write",level:"advanced",genre:"sysadmin",desc:"macOSの隠し設定（plist）を直接書き換える。GUI設定にない細かい挙動調整ができる。",example:"$ defaults write com.apple.finder AppleShowAllFiles -bool true\n$ killall Finder",tip:"変更前に defaults read で元の値を控えておくと元に戻しやすい。",danger:false},
+{id:110,name:"pmset",level:"advanced",genre:"sysadmin",desc:"電源管理設定（スリープ時間など）を確認・変更する。",example:"$ pmset -g\n$ sudo pmset displaysleep 10",tip:null,danger:false},
+{id:111,name:"diskutil eraseDisk",level:"advanced",genre:"sysadmin",desc:"指定したディスクを完全に初期化（フォーマット）する。対象ディスクを取り違えると全データが消去される非常に危険な操作。",example:"$ diskutil list\n$ diskutil eraseDisk APFS \"NewName\" /dev/disk4",tip:"必ず diskutil list でディスク番号を入念に確認してから実行する。",danger:true},
+{id:112,name:"dscl",level:"advanced",genre:"sysadmin",desc:"Directory Service コマンドラインユーティリティ。ユーザーアカウント情報の閲覧・編集を行う。",example:"$ dscl . -list /Users",tip:null,danger:false},
+
+/* ===== 上級：ネットワーク詳細 ===== */
+{id:113,name:"dig",level:"advanced",genre:"netadv",desc:"DNSの問い合わせを行い、ドメインの詳細なレコード情報を調べる。",example:"$ dig example.com\n$ dig example.com MX",tip:null,danger:false},
+{id:114,name:"nslookup",level:"advanced",genre:"netadv",desc:"ドメイン名からIPアドレスを調べる、digより簡易なDNS問い合わせコマンド。",example:"$ nslookup example.com",tip:null,danger:false},
+{id:115,name:"traceroute",level:"advanced",genre:"netadv",desc:"指定したホストまでの経路上の各ルーターを表示する。通信遅延の切り分けに使う。",example:"$ traceroute example.com",tip:null,danger:false},
+{id:116,name:"nc",level:"advanced",genre:"netadv",desc:"netcat。TCP/UDP通信を直接やり取りできる多機能ネットワークツール。ポート疎通確認などに使う。",example:"$ nc -zv example.com 443",tip:null,danger:false},
+{id:117,name:"lsof -i",level:"advanced",genre:"netadv",desc:"現在開いているネットワーク接続とそれを使用しているプロセスを一覧表示する。ポート使用中エラーの調査に便利。",example:"$ lsof -i :3000",tip:null,danger:false},
+{id:118,name:"networksetup",level:"advanced",genre:"netadv",desc:"Wi-Fiやネットワークインターフェースの設定をコマンドラインから確認・変更する。",example:"$ networksetup -listallhardwareports",tip:null,danger:false},
+{id:119,name:"dns-sd",level:"advanced",genre:"netadv",desc:"Bonjour（mDNS）でローカルネットワーク上のサービスを検出する。",example:"$ dns-sd -B _http._tcp",tip:null,danger:false},
+
+/* ===== 上級：スクリプティング ===== */
+{id:120,name:"alias",level:"advanced",genre:"script",desc:"よく使うコマンドに短い別名を付ける。.zshrcなどに書いておくと毎回有効になる。",example:"$ alias ll='ls -la'\n$ ll",tip:null,danger:false},
+{id:121,name:"export",level:"advanced",genre:"script",desc:"環境変数を設定し、以降に起動する子プロセスからも参照できるようにする。",example:"$ export PATH=\"$HOME/bin:$PATH\"",tip:null,danger:false},
+{id:122,name:"source",level:"advanced",genre:"script",desc:"シェルスクリプトを現在のシェルに読み込んで即座に反映する。設定ファイル変更後の再読み込みに使う。",example:"$ source ~/.zshrc",tip:null,danger:false},
+{id:123,name:"function",level:"advanced",genre:"script",desc:"シェル関数を定義し、複数コマンドをひとまとめにして再利用できるようにする。",example:"function mkcd() {\n  mkdir -p \"$1\" && cd \"$1\"\n}",tip:null,danger:false},
+{id:124,name:"crontab -e",level:"advanced",genre:"script",desc:"定期実行タスク（cron）を編集する。決まった時刻に自動でコマンドを走らせたい時に使う。",example:"$ crontab -e\n0 3 * * * /Users/you/backup.sh",tip:"macOSではlaunchdの方が推奨される場合もある。",danger:false},
+{id:125,name:"osascript",level:"advanced",genre:"script",desc:"AppleScriptをコマンドラインから実行する。Macアプリの操作を自動化できる。",example:"$ osascript -e 'display dialog \"Hello\"'",tip:null,danger:false},
+{id:126,name:"trap",level:"advanced",genre:"script",desc:"シェルスクリプト内でシグナル（Ctrl+Cなど）を受け取った時の処理を定義する。",example:"trap 'echo \"中断されました\"; exit 1' INT",tip:null,danger:false},
+
+/* ===== 上級：パフォーマンス監視 ===== */
+{id:127,name:"top -o cpu",level:"advanced",genre:"perf",desc:"CPU使用率が高い順にプロセスを並べてリアルタイム表示する。",example:"$ top -o cpu",tip:null,danger:false},
+{id:128,name:"vm_stat",level:"advanced",genre:"perf",desc:"仮想メモリの統計情報（ページイン/アウトなど）を表示する。メモリ不足の調査に使う。",example:"$ vm_stat",tip:null,danger:false},
+{id:129,name:"iostat",level:"advanced",genre:"perf",desc:"CPUとディスクI/Oの統計情報を一定間隔で表示する。",example:"$ iostat 2",tip:null,danger:false},
+{id:130,name:"fs_usage",level:"advanced",genre:"perf",desc:"ファイルシステムの呼び出しをリアルタイムで監視する。どのプロセスがどのファイルにアクセスしているか追跡できる。管理者権限が必要。",example:"$ sudo fs_usage | grep myapp",tip:null,danger:false},
+{id:131,name:"dtrace",level:"advanced",genre:"perf",desc:"システムコールレベルでの動的トレーシングを行う高度な診断ツール。SIP（システム整合性保護）の制限に注意。",example:"$ sudo dtrace -n 'syscall:::entry { @[probefunc] = count(); }'",tip:null,danger:false},
+{id:132,name:"nettop",level:"advanced",genre:"perf",desc:"プロセスごとのネットワーク使用量をリアルタイムで表示する。",example:"$ nettop",tip:null,danger:false},
+{id:133,name:"sysctl",level:"advanced",genre:"perf",desc:"カーネルパラメータの取得・設定を行う。",example:"$ sysctl hw.ncpu\nhw.ncpu: 8",tip:null,danger:false},
+
+/* ===== 上級：開発者ツール ===== */
+{id:134,name:"git status",level:"advanced",genre:"dev",desc:"Gitリポジトリの変更状態（追跡中/未追跡ファイル）を確認する。",example:"$ git status",tip:null,danger:false},
+{id:135,name:"git log --oneline --graph",level:"advanced",genre:"dev",desc:"コミット履歴を1行ずつ、ブランチの分岐がわかるグラフ付きで表示する。",example:"$ git log --oneline --graph --all",tip:null,danger:false},
+{id:136,name:"xcode-select --install",level:"advanced",genre:"dev",desc:"Xcode Command Line Tools（gcc, gitなどの開発基盤）をインストールする。",example:"$ xcode-select --install",tip:null,danger:false},
+{id:137,name:"python3 -m http.server",level:"advanced",genre:"dev",desc:"カレントディレクトリを即席のWebサーバーとして公開する。簡易動作確認に便利。",example:"$ python3 -m http.server 8000\n# http://localhost:8000 で確認",tip:null,danger:false},
+{id:138,name:"npm",level:"advanced",genre:"dev",desc:"Node.jsのパッケージマネージャー。ライブラリのインストールやスクリプト実行を行う。",example:"$ npm install\n$ npm run dev",tip:null,danger:false},
+{id:139,name:"node -e",level:"advanced",genre:"dev",desc:"短いJavaScriptコードをファイルを作らずにその場で実行する。",example:"$ node -e \"console.log(1+1)\"\n2",tip:null,danger:false},
+
+/* ===== 上級：セキュリティ ===== */
+{id:140,name:"codesign -dv",level:"advanced",genre:"security",desc:"アプリの署名情報を検証する。配布されたアプリの正当性確認に使う。",example:"$ codesign -dv --verbose=4 /Applications/Example.app",tip:null,danger:false},
+{id:141,name:"spctl --status",level:"advanced",genre:"security",desc:"Gatekeeper（未署名アプリの実行制御機能）の有効/無効状態を確認する。",example:"$ spctl --status\nassessments enabled",tip:null,danger:false},
+{id:142,name:"csrutil status",level:"advanced",genre:"security",desc:"SIP（System Integrity Protection）の有効/無効状態を確認する。",example:"$ csrutil status\nSystem Integrity Protection status: enabled.",tip:null,danger:false},
+{id:143,name:"openssl",level:"advanced",genre:"security",desc:"証明書の確認やTLS接続のデバッグなど、暗号関連の操作を行う多機能ツール。",example:"$ openssl s_client -connect example.com:443",tip:null,danger:false},
+{id:144,name:"security find-generic-password",level:"advanced",genre:"security",desc:"macOSのキーチェーンに保存されたパスワード情報を検索する。",example:"$ security find-generic-password -s \"MyApp\" -w",tip:null,danger:false},
+{id:145,name:"sudo rm -rf /",level:"advanced",genre:"security",desc:"【絶対に実行してはいけない例として掲載】ルートディレクトリ以下を強制的に再帰削除しようとするコマンド。システム全体が破壊される。チートシートとして知識として知っておくべき「やってはいけない」代表例。",example:"# 警告：これは実行例ではなく注意喚起のための記載です\n# 実際に実行するとシステムが破壊されます\nsudo rm -rf /",tip:"最近のmacOSはルート保護（SIP）により全消去はされにくいが、それでも絶対に試さないこと。",danger:true},
+/* ===== 隠しコマンド：小ネタ・お遊び ===== */
+{id:146,name:"sl",level:"hidden",genre:"fun",desc:"lsのタイプミスでおなじみのジョークコマンド。画面を蒸気機関車が走り抜ける。Homebrewでの導入が必要。",example:"$ brew install sl\n$ sl",tip:null,danger:false},
+{id:147,name:"cowsay",level:"hidden",genre:"fun",desc:"牛のアスキーアートに好きなセリフを喋らせる。Homebrewでの導入が必要。",example:"$ brew install cowsay\n$ cowsay \"Hello, Mac!\"",tip:null,danger:false},
+{id:148,name:"fortune",level:"hidden",genre:"fun",desc:"ランダムな格言・ジョークを1つ表示する。cowsayと組み合わせるのが定番。Homebrewでの導入が必要。",example:"$ brew install fortune\n$ fortune | cowsay",tip:null,danger:false},
+{id:149,name:"yes",level:"hidden",genre:"fun",desc:"指定した文字列（省略時は\"y\"）を無限に出力し続ける、地味だが奥が深いコマンド。",example:"$ yes \"Mac最高\"",tip:"Ctrl+Cで停止しないと永遠に出力され続けるので注意。",danger:false},
+{id:150,name:"cmatrix",level:"hidden",genre:"fun",desc:"映画マトリックス風に文字が降り注ぐスクリーンセーバー風表示。Homebrewでの導入が必要。",example:"$ brew install cmatrix\n$ cmatrix",tip:null,danger:false},
+{id:151,name:"telnet towel.blinkenlights.nl",level:"hidden",genre:"fun",desc:"telnet経由でスター・ウォーズのアスキーアートアニメを上映してくれる伝説のイースターエッグ。最近のmacOSではtelnetの別途導入が必要。",example:"$ brew install inetutils\n$ telnet towel.blinkenlights.nl",tip:null,danger:false},
+{id:152,name:"curl wttr.in",level:"hidden",genre:"fun",desc:"ターミナルだけで天気予報をアスキーアート付きで表示してくれる、実用的にも使える小ネタ。",example:"$ curl wttr.in/Tokyo",tip:null,danger:false},
+{id:153,name:"say -v '?'",level:"hidden",genre:"fun",desc:"sayコマンドで使える読み上げ音声（ボイス）の一覧を表示する。変わった声で読み上げさせると意外と楽しい。",example:"$ say -v '?'\n$ say -v Whisper \"内緒の話だよ\"",tip:null,danger:false},
+{id:154,name:"emacs（M-x doctor）",level:"hidden",genre:"fun",desc:"標準搭載のエディタemacsに、心理セラピスト風に会話してくれる隠しモードがある。",example:"$ emacs\n# 起動後 Esc → x と入力し doctor と打ってEnter",tip:null,danger:false},
+{id:155,name:"nyancat",level:"hidden",genre:"fun",desc:"虹色の軌跡を残しながら飛ぶニャンキャットのアニメーションをターミナルに表示する。Homebrewでの導入が必要。",example:"$ brew install nyancat\n$ nyancat",tip:null,danger:false},
+{id:156,name:"figlet",level:"hidden",genre:"fun",desc:"文字列を巨大なアスキーアート文字に変換する。スクリプトの起動メッセージを派手にしたい時にも使える。Homebrewでの導入が必要。",example:"$ brew install figlet\n$ figlet \"Hello\"",tip:null,danger:false},
+{id:157,name:"networkQuality",level:"hidden",genre:"fun",desc:"macOS 12以降に標準搭載された回線速度測定コマンド。ブラウザ不要でサクッと速度チェックできる、知る人ぞ知る便利機能。",example:"$ networkQuality",tip:null,danger:false},
+{id:158,name:"osascript（通知）",level:"hidden",genre:"fun",desc:"AppleScript経由でMacの通知センターにポップアップ通知を出す。処理完了の通知などに応用できる。",example:"$ osascript -e 'display notification \"完了しました\" with title \"Terminal\"'",tip:null,danger:false},
+{id:159,name:"open -a ScreenSaverEngine",level:"hidden",genre:"fun",desc:"ロック画面のスクリーンセーバーをコマンド一発ですぐに起動する小技。",example:"$ open -a ScreenSaverEngine",tip:null,danger:false},
+{id:160,name:"date -v+1d",level:"hidden",genre:"fun",desc:"BSD系dateコマンド独自の日付計算オプション。N日後/前の日付を一瞬で計算できる、意外と知られていない便利技。",example:"$ date -v+1d\n$ date -v-7d \"+%Y-%m-%d\"",tip:null,danger:false},
+];
+
+/* ============================================================
+   状態管理
+   ============================================================ */
+const FAV_KEY = "mtcc_favorites_v1";
+const LEARNED_KEY = "mtcc_learned_v1";
+let favorites = new Set(JSON.parse(localStorage.getItem(FAV_KEY) || "[]"));
+let learned = new Set(JSON.parse(localStorage.getItem(LEARNED_KEY) || "[]"));
+
+const state = {
+  query:"",
+  tab:"all",
+  genreFilters:new Set(),
+  favoritesOnly:false
+};
+
+function saveFavorites(){ localStorage.setItem(FAV_KEY, JSON.stringify([...favorites])); }
+function saveLearned(){ localStorage.setItem(LEARNED_KEY, JSON.stringify([...learned])); }
+
+/* ============================================================
+   初期描画
+   ============================================================ */
+function init(){
+  document.getElementById("totalStats").textContent = `全 ${COMMANDS.length} コマンド収録`;
+  document.getElementById("footerStats").textContent = `初級 ${countByLevel("beginner")} ・ 中級 ${countByLevel("intermediate")} ・ 上級 ${countByLevel("advanced")} ・ 隠しコマンド ${countByLevel("hidden")}`;
+
+  buildTabs();
+  buildLevelSections();
+  buildGenreChips();
+  renderTodayCommand();
+  updateFavCount();
+  applyFilters();
+  setupResponsivePlaceholder();
+
+  document.getElementById("searchInput").addEventListener("input", e=>{
+    state.query = e.target.value.trim().toLowerCase();
+    applyFilters();
+  });
+  document.getElementById("favToggleBtn").addEventListener("click", ()=>{
+    state.favoritesOnly = !state.favoritesOnly;
+    document.getElementById("favToggleBtn").classList.toggle("active", state.favoritesOnly);
+    applyFilters();
+  });
+  document.getElementById("favCounterBtn").addEventListener("click", ()=>{
+    state.favoritesOnly = true;
+    document.getElementById("favToggleBtn").classList.add("active");
+    applyFilters();
+    window.scrollTo({top:0, behavior:"smooth"});
+  });
+  document.getElementById("rerollBtn").addEventListener("click", renderTodayCommand);
+
+  document.addEventListener("keydown", e=>{
+    const tag = document.activeElement.tagName;
+    if(e.key === "/" && tag !== "INPUT" && tag !== "TEXTAREA"){
+      e.preventDefault();
+      document.getElementById("searchInput").focus();
+    }
+    if(e.key === "Escape" && document.activeElement.id === "searchInput"){
+      document.activeElement.blur();
+    }
+  });
+}
+
+function countByLevel(level){ return COMMANDS.filter(c=>c.level===level).length; }
+
+/* ============================================================
+   検索プレースホルダー（画面幅に応じて文言を切り替え、はみ出しを防ぐ）
+   ============================================================ */
+function setupResponsivePlaceholder(){
+  const input = document.getElementById("searchInput");
+  const breakpoints = [
+    { query:"(max-width:374px)", text:"検索" },
+    { query:"(max-width:480px)", text:"コマンドを検索" },
+    { query:"(max-width:640px)", text:"検索（/キー）" }
+  ];
+  const fallbackText = "コマンド名・説明・使用例で検索（ / キーでフォーカス）";
+  function update(){
+    const match = breakpoints.find(b => window.matchMedia(b.query).matches);
+    input.placeholder = match ? match.text : fallbackText;
+  }
+  update();
+  window.addEventListener("resize", update);
+}
+
+/* ============================================================
+   タブ
+   ============================================================ */
+function buildTabs(){
+  const tabRow = document.getElementById("tabRow");
+  const tabs = [["all","すべて"], ...LEVEL_ORDER.map(l=>[l, LEVEL_LABELS[l]])];
+  tabRow.innerHTML = tabs.map(([key,label])=>
+    `<button class="tab-btn${key==='all' ? ' active' : ''}" data-tab="${key}" type="button">${label}</button>`
+  ).join("");
+  tabRow.querySelectorAll(".tab-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      state.tab = btn.dataset.tab;
+      state.genreFilters.clear();
+      tabRow.querySelectorAll(".tab-btn").forEach(b=>b.classList.toggle("active", b===btn));
+      buildGenreChips();
+      applyFilters();
+    });
+  });
+}
+
+/* ============================================================
+   ジャンルチップ（選択中タブに応じて動的生成）
+   ============================================================ */
+function buildGenreChips(){
+  const row = document.getElementById("genreChipRow");
+  if(state.tab === "all"){ row.innerHTML = ""; return; }
+  const genresInLevel = [...new Set(COMMANDS.filter(c=>c.level===state.tab).map(c=>c.genre))];
+  row.innerHTML = genresInLevel.map(g=>
+    `<button class="genre-chip" data-genre="${g}" type="button">${GENRE_LABELS[g] || g}</button>`
+  ).join("");
+  row.querySelectorAll(".genre-chip").forEach(chip=>{
+    chip.addEventListener("click", ()=>{
+      const g = chip.dataset.genre;
+      if(state.genreFilters.has(g)){ state.genreFilters.delete(g); chip.classList.remove("active"); }
+      else{ state.genreFilters.add(g); chip.classList.add("active"); }
+      applyFilters();
+    });
+  });
+}
+
+/* ============================================================
+   レベルセクション & カード描画
+   ============================================================ */
+function buildLevelSections(){
+  const root = document.getElementById("levelSectionsRoot");
+  root.innerHTML = LEVEL_ORDER.map(level=>{
+    const cmds = COMMANDS.filter(c=>c.level===level);
+    return `
+    <section class="level-section ${LEVEL_BG[level]}" id="section-${level}" data-level="${level}">
+      <div class="level-header">
+        <h2>${LEVEL_LABELS[level]}</h2>
+        <p class="level-sub">${LEVEL_SUB[level]}</p>
+        <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-${level}" style="width:0%"></div></div>
+        <div class="progress-label" id="progress-label-${level}"></div>
+      </div>
+      <div class="cards-grid" id="grid-${level}">
+        ${cmds.map(cardHtml).join("")}
+      </div>
+    </section>`;
+  }).join("");
+
+  root.querySelectorAll(".fav-star").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = Number(btn.dataset.id);
+      if(favorites.has(id)){ favorites.delete(id); btn.classList.remove("active"); btn.textContent="☆"; }
+      else{ favorites.add(id); btn.classList.add("active"); btn.textContent="★"; }
+      saveFavorites();
+      updateFavCount();
+      if(state.favoritesOnly) applyFilters();
+    });
+  });
+  root.querySelectorAll(".copy-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const text = decodeURIComponent(btn.dataset.copy);
+      navigator.clipboard.writeText(text).then(()=>{
+        btn.classList.add("copied");
+        btn.textContent = "✓";
+        setTimeout(()=>{ btn.classList.remove("copied"); btn.textContent = "⧉"; }, 1300);
+      });
+    });
+  });
+  root.querySelectorAll(".learned-toggle input").forEach(cb=>{
+    cb.addEventListener("change", ()=>{
+      const id = Number(cb.dataset.id);
+      if(cb.checked){ learned.add(id); } else { learned.delete(id); }
+      saveLearned();
+      cb.closest(".learned-toggle").classList.toggle("active", cb.checked);
+      updateAllProgress();
+    });
+  });
+
+  updateAllProgress();
+}
+
+function cardHtml(c){
+  const isFav = favorites.has(c.id);
+  const isLearned = learned.has(c.id);
+  const searchBlob = `${c.name} ${c.desc} ${c.example} ${GENRE_LABELS[c.genre]||""} ${LEVEL_LABELS[c.level]}`.toLowerCase();
+  return `
+  <article class="cmd-card" data-id="${c.id}" data-level="${c.level}" data-genre="${c.genre}" data-search="${escapeHtml(searchBlob)}">
+    <div class="cmd-card-top">
+      <span class="cmd-name">${escapeHtml(c.name)}</span>
+      <button class="fav-star${isFav ? ' active' : ''}" data-id="${c.id}" type="button" aria-label="お気に入り">${isFav ? '★' : '☆'}</button>
+    </div>
+    ${c.danger ? '<span class="danger-badge">⚠ 取り扱い注意</span>' : ''}
+    <p class="cmd-desc">${escapeHtml(c.desc)}</p>
+    <div class="cmd-example">${escapeHtml(c.example)}<button class="copy-btn" data-copy="${encodeURIComponent(c.example)}" type="button" aria-label="コピー">⧉</button></div>
+    ${c.tip ? `<div class="cmd-tip"><strong>応用アイデア：</strong>${escapeHtml(c.tip)}</div>` : ''}
+    <div class="cmd-bottom-row">
+      <span class="genre-tag">${GENRE_LABELS[c.genre] || c.genre}</span>
+      <label class="learned-toggle${isLearned ? ' active' : ''}">
+        <input type="checkbox" data-id="${c.id}" ${isLearned ? 'checked' : ''}> 覚えた
+      </label>
+    </div>
+  </article>`;
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, s=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[s]));
+}
+
+/* ============================================================
+   フィルタ適用
+   ============================================================ */
+function applyFilters(){
+  let visibleTotal = 0;
+  LEVEL_ORDER.forEach(level=>{
+    const section = document.getElementById(`section-${level}`);
+    let visibleInSection = 0;
+    section.querySelectorAll(".cmd-card").forEach(card=>{
+      const matchesTab = state.tab === "all" || card.dataset.level === state.tab;
+      const matchesGenre = state.genreFilters.size === 0 || state.genreFilters.has(card.dataset.genre);
+      const matchesQuery = state.query === "" || card.dataset.search.includes(state.query);
+      const matchesFav = !state.favoritesOnly || favorites.has(Number(card.dataset.id));
+      const visible = matchesTab && matchesGenre && matchesQuery && matchesFav;
+      card.classList.toggle("hidden-by-filter", !visible);
+      if(visible) visibleInSection++;
+    });
+    section.classList.toggle("section-empty", visibleInSection === 0);
+    visibleTotal += visibleInSection;
+  });
+  document.getElementById("noResults").classList.toggle("show", visibleTotal === 0);
+}
+
+/* ============================================================
+   進捗バー（覚えた習得率）
+   ============================================================ */
+function updateAllProgress(){
+  LEVEL_ORDER.forEach(level=>{
+    const ids = COMMANDS.filter(c=>c.level===level).map(c=>c.id);
+    const learnedCount = ids.filter(id=>learned.has(id)).length;
+    const pct = ids.length ? Math.round((learnedCount/ids.length)*100) : 0;
+    document.getElementById(`progress-${level}`).style.width = pct + "%";
+    document.getElementById(`progress-label-${level}`).textContent = `習得 ${learnedCount} / ${ids.length}（${pct}%）`;
+  });
+}
+
+function updateFavCount(){
+  document.getElementById("favCount").textContent = favorites.size;
+}
+
+/* ============================================================
+   今日のコマンド（日付シードでランダム選出、再選出も可）
+   ============================================================ */
+function renderTodayCommand(forceRandom){
+  let index;
+  if(forceRandom === undefined || forceRandom.isTrusted){
+    const today = new Date();
+    const seed = today.getFullYear()*10000 + (today.getMonth()+1)*100 + today.getDate();
+    index = seed % COMMANDS.length;
+    if(window.__todayRerollCount){
+      index = Math.floor(Math.random()*COMMANDS.length);
+    }
+    window.__todayRerollCount = (window.__todayRerollCount || 0) + 1;
+  }
+  const c = COMMANDS[index];
+  document.getElementById("todayName").textContent = c.name;
+  document.getElementById("todayDesc").textContent = c.desc;
+}
+
+init();
+</script>
+</body>
+</html>
